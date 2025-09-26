@@ -3,7 +3,6 @@
 import { useApp } from '@/contexts/app-context';
 import { DollarSign, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { StatCard } from './stat-card';
-import { SpendingInsights } from './spending-insights';
 import { RecentTransactions } from './recent-transactions';
 
 export function DashboardView() {
@@ -26,11 +25,8 @@ export function DashboardView() {
           iconClassName="text-red"
         />
       </div>
-      <div className="grid gap-4 md:gap-8 xl:col-span-2">
+      <div className="grid gap-4 md:gap-8 xl:col-span-3">
          <RecentTransactions />
-      </div>
-      <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-        <SpendingInsights />
       </div>
     </div>
   );

@@ -51,7 +51,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: transaction?.amount || '',
+      amount: transaction?.amount || undefined,
       type: transaction?.type || 'expense',
       category: transaction?.category || '',
       date: transaction ? new Date(transaction.date) : new Date(),
@@ -86,7 +86,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="0.00" step="0.01" {...field} />
+                <Input type="number" placeholder="0.00" step="0.01" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
