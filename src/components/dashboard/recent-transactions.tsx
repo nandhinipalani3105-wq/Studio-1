@@ -52,7 +52,7 @@ export function RecentTransactions() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={t.type === 'income' ? 'secondary' : 'destructive'}>
+                    <Badge variant={t.type === 'income' ? 'default' : 'destructive'}>
                       {t.type === 'income' ? 'Income' : 'Expense'}
                     </Badge>
                   </TableCell>
