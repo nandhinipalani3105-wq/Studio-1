@@ -57,7 +57,7 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
                   </TableCell>
                   <TableCell>
                     <Badge variant={t.type === 'income' ? 'secondary' : 'destructive'}>
-                      {t.type}
+                      {t.type === 'income' ? 'Income' : 'Expense'}
                     </Badge>
                   </TableCell>
                   <TableCell
