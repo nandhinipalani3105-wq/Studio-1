@@ -1,41 +1,59 @@
 'use client';
 
-import { createContext, useContext, useMemo, ReactNode } from 'react';
+import { createContext, useContext, useMemo, ReactNode, useEffect } from 'react';
 import type { Transaction } from '@/lib/types';
-import { useLocalStorage } from '@/hooks/use-local-storage';
-import { INITIAL_TRANSACTIONS } from '@/lib/data';
+import {
+  useFirestore,
+  useUser,
+  useCollection,
+  useMemoFirebase,
+  addDocumentNonBlocking,
+  updateDocumentNonBlocking,
+  deleteDocumentNonBlocking,
+} from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 
 interface AppContextType {
   transactions: Transaction[];
-  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
-  editTransaction: (transaction: Transaction) => void;
+  addTransaction: (transaction: Omit<Transaction, 'id' | 'userId'>) => void;
+  editTransaction: (transaction: Omit<Transaction, 'userId'>) => void;
   deleteTransaction: (id: string) => void;
   totalBalance: number;
   todayIncome: number;
   todayExpenses: number;
+  isLoading: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>(
-    'transactions',
-    INITIAL_TRANSACTIONS
-  );
+  const firestore = useFirestore();
+  const { user } = useUser();
 
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    const newTransaction = { ...transaction, id: crypto.randomUUID() };
-    setTransactions((prev) => [newTransaction, ...prev]);
+  const transactionsCollection = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, 'users', user.uid, 'transactions');
+  }, [firestore, user]);
+
+  const { data: transactions, isLoading } = useCollection<Transaction>(transactionsCollection);
+
+  const addTransaction = (transaction: Omit<Transaction, 'id' | 'userId'>) => {
+    if (!transactionsCollection) return;
+    const newTransaction = { ...transaction, userId: user!.uid };
+    addDocumentNonBlocking(transactionsCollection, newTransaction);
   };
 
-  const editTransaction = (updatedTransaction: Transaction) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t))
-    );
+  const editTransaction = (updatedTransaction: Omit<Transaction, 'userId'>) => {
+    if (!user) return;
+    const docRef = doc(firestore, 'users', user.uid, 'transactions', updatedTransaction.id);
+    const transactionToUpdate = { ...updatedTransaction, userId: user.uid };
+    updateDocumentNonBlocking(docRef, transactionToUpdate);
   };
 
   const deleteTransaction = (id: string) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    if (!user) return;
+    const docRef = doc(firestore, 'users', user.uid, 'transactions', id);
+    deleteDocumentNonBlocking(docRef);
   };
 
   const { totalBalance, todayIncome, todayExpenses } = useMemo(() => {
@@ -44,8 +62,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let todayIncome = 0;
     let todayExpenses = 0;
 
+    if (!transactions) {
+      return { totalBalance, todayIncome, todayExpenses };
+    }
+
     for (const t of transactions) {
-      if (t.type === 'income') {
+      if (t.type === 'Income') {
         totalBalance += t.amount;
         if (t.date.startsWith(today)) {
           todayIncome += t.amount;
@@ -61,13 +83,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [transactions]);
 
   const value = {
-    transactions,
+    transactions: transactions || [],
     addTransaction,
     editTransaction,
     deleteTransaction,
     totalBalance,
     todayIncome,
     todayExpenses,
+    isLoading,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

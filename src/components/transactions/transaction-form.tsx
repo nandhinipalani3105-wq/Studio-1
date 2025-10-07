@@ -32,14 +32,14 @@ import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   amount: z.coerce.number().min(0.01, 'Amount must be greater than 0'),
-  type: z.enum(['income', 'expense']),
+  type: z.enum(['Income', 'Expense']),
   category: z.string().min(1, 'Category is required'),
   date: z.date(),
   notes: z.string().optional(),
 });
 
 type TransactionFormProps = {
-  transaction?: Transaction;
+  transaction?: Omit<Transaction, 'userId'>;
   onSuccess: () => void;
 };
 
@@ -52,7 +52,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
     resolver: zodResolver(formSchema),
     defaultValues: {
       amount: transaction?.amount || undefined,
-      type: transaction?.type || 'expense',
+      type: transaction?.type || 'Expense',
       category: transaction?.category || '',
       date: transaction ? new Date(transaction.date) : new Date(),
       notes: transaction?.notes || '',
@@ -105,8 +105,8 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="income">Income</SelectItem>
-                  <SelectItem value="expense">Expense</SelectItem>
+                  <SelectItem value="Income">Income</SelectItem>
+                  <SelectItem value="Expense">Expense</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

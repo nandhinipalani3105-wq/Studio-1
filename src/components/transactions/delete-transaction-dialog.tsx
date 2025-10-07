@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 type DeleteTransactionDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  transaction: Transaction;
+  transaction: Omit<Transaction, 'userId'>;
 };
 
 export function DeleteTransactionDialog({

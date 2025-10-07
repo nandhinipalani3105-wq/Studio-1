@@ -18,9 +18,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function RecentTransactions() {
-  const { transactions } = useApp();
+  const { transactions, isLoading } = useApp();
   const recentTransactions = transactions.slice(0, 5);
 
   return (
@@ -40,7 +41,16 @@ export function RecentTransactions() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {recentTransactions.length > 0 ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                </TableRow>
+              ))
+            ) : recentTransactions.length > 0 ? (
               recentTransactions.map((t) => (
                 <TableRow key={t.id}>
                   <TableCell>
@@ -52,16 +62,19 @@ export function RecentTransactions() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={t.type === 'income' ? 'default' : 'destructive'}>
-                      {t.type === 'income' ? 'Income' : 'Expense'}
+                    <Badge
+                      variant={t.type === 'Income' ? 'default' : 'destructive'}
+                      className={t.type === 'Income' ? 'bg-green hover:bg-green/90' : ''}
+                    >
+                      {t.type}
                     </Badge>
                   </TableCell>
                   <TableCell
                     className={`text-right font-medium ${
-                      t.type === 'income' ? 'text-green' : 'text-red'
+                      t.type === 'Income' ? 'text-green' : 'text-red'
                     }`}
                   >
-                    {t.type === 'income' ? '+' : '-'}
+                    {t.type === 'Income' ? '+' : '-'}
                     {formatCurrency(t.amount)}
                   </TableCell>
                    <TableCell>{format(new Date(t.date), 'MMM d, yyyy')}</TableCell>

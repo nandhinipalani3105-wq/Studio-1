@@ -23,7 +23,7 @@ import React from 'react';
 type TransactionsToolbarProps = {
   onSearch: (term: string) => void;
   onDateChange: (dateRange: DateRange | undefined) => void;
-  transactions: Transaction[];
+  transactions: Omit<Transaction, 'userId'>[];
 };
 
 export function TransactionsToolbar({
@@ -134,7 +134,7 @@ export function TransactionsToolbar({
 
       <Button variant="outline" size="sm" className="h-10 gap-1" onClick={handleExport}>
         <File className="h-3.5 w-3.5" />
-        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
+        <span className="sr-only sm:not-sr-only sm:whitespace-rap">Export</span>
       </Button>
     </div>
   );

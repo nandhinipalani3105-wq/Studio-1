@@ -13,7 +13,7 @@ import type { Transaction } from '@/lib/types';
 type TransactionDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  transaction?: Transaction;
+  transaction?: Omit<Transaction, 'userId'>;
 };
 
 export function TransactionDialog({ open, onOpenChange, transaction }: TransactionDialogProps) {

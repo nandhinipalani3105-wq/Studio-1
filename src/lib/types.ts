@@ -1,8 +1,9 @@
 export type Transaction = {
   id: string;
   amount: number;
-  type: 'income' | 'expense';
+  type: 'Income' | 'Expense';
   category: string;
   date: string; // ISO string format
   notes?: string;
+  userId: string;
 };
