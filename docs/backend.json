@@ -1,0 +1,126 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's display name."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name"
+      ]
+    },
+    "Transaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Transaction",
+      "type": "object",
+      "description": "Represents a financial transaction (income or expense).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the transaction."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who created the transaction. (Relationship: User 1:N Transaction)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the transaction."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of transaction (income or expense).",
+          "format": "enum",
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the transaction (e.g., Food, Salary)."
+        },
+        "date": {
+          "type": "string",
+          "description": "The date of the transaction.",
+          "format": "date-time"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes about the transaction."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "amount",
+        "type",
+        "category",
+        "date"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. The 'userId' parameter is the Firebase Authentication UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/transactions/{transactionId}",
+        "definition": {
+          "entityName": "Transaction",
+          "schema": {
+            "$ref": "#/backend/entities/Transaction"
+          },
+          "description": "Stores transaction data for each user. The 'userId' parameter identifies the owner of the transaction. Ownership is implicit in the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user who owns the transaction. It must match the Firebase Authentication UID."
+            },
+            {
+              "name": "transactionId",
+              "description": "The unique identifier for the transaction."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to securely store user transactions for the ExpenseFlow application. It prioritizes Authorization Independence by leveraging path-based ownership for transactions, ensuring that access control can be managed and validated without requiring complex `get()` calls in the security rules. The structure is segregated to maintain a homogenous security posture, with user data and transaction data separated into distinct collections.\n\n**Authorization Independence:** Transactions are stored under `/users/{userId}/transactions/{transactionId}`, making ownership explicit via the path. Security rules can easily validate if the `request.auth.uid` matches the `userId` path parameter without needing to read the user document.\n\n**QAPs Support:** List operations are secured because access control is enforced directly on the `transactions` subcollection based on the authenticated user ID in the path, preventing unauthorized access. Each user can only list and access their own transactions. Segregation ensures that different types of data (user profiles and transactions) do not share the same collection, simplifying access control. The hierarchical path clearly defines ownership. This structure allows for efficient querying and listing of transactions for a specific user, supporting the application's filtering and display requirements."
+  }
+}
