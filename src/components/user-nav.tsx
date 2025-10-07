@@ -22,8 +22,12 @@ export function UserNav() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await signOut(auth);
-    router.push('/login');
+    try {
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out: ', error);
+    }
   };
   
   if (!user) {
